@@ -3,3 +3,18 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+body {
+  width: 640px;
+  margin: 44px auto;
+  background: #fff;
+  color: #333;
+  font-family: Verdana, Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  line-height: 22px;
+}
+
+#editor {
+  min-height: 88px;
+  outline: 1px solid #efefef;
+}
