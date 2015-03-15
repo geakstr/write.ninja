@@ -1,4 +1,4 @@
-// This file was automatically generated from "dev.lmd.json"
+// This file was automatically generated from "app.lmd.json"
 (function (global, main, modules, modules_options, options) {
     var initialized_modules = {},
         global_eval = function (code) {
