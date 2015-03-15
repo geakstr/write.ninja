@@ -11,7 +11,7 @@
     "url": "https://github.com/geakstr/write.ninja"
   },
   "private": true,
-  "main": "index.html",
+  "main": "app/www/index.html",
   "dependencies": {
     "jquery": "2.1.3"
   }

@@ -9,7 +9,7 @@
     "url": "https://github.com/geakstr/write.ninja"
   },
   "private": true,
-  "main": "index.html",  
+  "main": "app/www/index.html",
   "dependencies": {},
   "devDependencies": {
     "gulp": "3.8.11",
