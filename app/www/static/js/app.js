@@ -309,20 +309,9 @@ sb.on('stats:before-require-count', function (moduleName, module) {
     main(lmd_trigger('lmd-register:decorate-require', 'main', lmd_require)[1], output.exports, output);
 })/*DO NOT ADD ; !*/
 (this,(function (require, exports, module) { /* wrapped by builder */
-jQuery.fn.insertAt = function(index, element) {
-  var lastIndex = this.children().size()
-  if (index < 0) {
-    index = Math.max(0, lastIndex + 1 + index)
-  }
-  this.append(element)
-  if (index < lastIndex) {
-    this.children().eq(index).before(this.children().last())
-  }
-  return this;
-}
-
 $(document).ready(function() {
   var $ = require('jquery'),
+    Utils = require('./Utils'),
     Selection = require('./Selection'),
     Editor = require('./Editor'),
     Block = require('./Block');
@@ -333,9 +322,7 @@ $(document).ready(function() {
   editor.push_block().push_block();
   editor.push_block('Это вторая строка');
 
-  editor.insert_block(2, 'Вставка');
-
-  //editor.remove_blocks_range(3, 4);
+  editor.insert_block(1, 'Вставка');
 });
 }),{
 "./Block": (function (require, exports, module) { /* wrapped by builder */
@@ -640,6 +627,28 @@ var Selection = (function() {
 })();
 
 module.exports = Selection;
+}),
+"./Utils": (function (require, exports, module) { /* wrapped by builder */
+var $ = require('jquery');
+
+var Utils = (function() {
+  function Utils() {}
+
+  $.fn.insertAt = function(index, elements) {
+    var children = this.children();
+    if (index >= children.size()) {
+      this.append(elements);
+      return this;
+    }
+    var before = children.eq(index);
+    $(elements).insertBefore(before);
+    return this;
+  };
+
+  return Utils;
+})();
+
+module.exports = Utils;
 }),
 "jquery": "@jQuery"
 },{},{});
