@@ -1,5 +1,4 @@
-var $ = require('jquery'),
-  Editor = require('./Editor');
+var $ = require('jquery');
 
 var Block = (function() {
   function Block(text) {
@@ -52,7 +51,7 @@ var Block = (function() {
   };
 
   Block.prototype.format = function block_format() {
-    var css = Editor.tag,
+    var css = 'edtr-blck',
       attr = 'class="' + css + '" data-idx="' + this._idx + '"';
 
     return '<p ' + attr + '>' + this._text + '</p>';

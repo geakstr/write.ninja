@@ -330,18 +330,16 @@ $(document).ready(function() {
   var editor = new Editor();
 
   editor.push_block('Это первая строка');
-  editor.push_block();
-  editor.push_block();
+  editor.push_block().push_block();
   editor.push_block('Это вторая строка');
 
   editor.insert_block(2, 'Вставка');
 
-  editor.remove_blocks_range(3, 4);
+  //editor.remove_blocks_range(3, 4);
 });
 }),{
 "./Block": (function (require, exports, module) { /* wrapped by builder */
-var $ = require('jquery'),
-  Editor = require('./Editor');
+var $ = require('jquery');
 
 var Block = (function() {
   function Block(text) {
@@ -394,7 +392,7 @@ var Block = (function() {
   };
 
   Block.prototype.format = function block_format() {
-    var css = Editor.tag,
+    var css = 'edtr-blck',
       attr = 'class="' + css + '" data-idx="' + this._idx + '"';
 
     return '<p ' + attr + '>' + this._text + '</p>';
@@ -420,8 +418,6 @@ var Editor = (function() {
     this._events_handlers();
   }
 
-  Editor.tag = "edtr-blck";
-
   Editor.prototype.push_block = function editor_push_block(block) {
     if (typeof block === 'string') {
       block = new Block(block);
@@ -431,6 +427,8 @@ var Editor = (function() {
 
     block.idx = this._model.length;
     this._push(block);
+
+    return this;
   };
 
   Editor.prototype.insert_block = function editor_insert_block(idx, block) {
@@ -443,16 +441,22 @@ var Editor = (function() {
     block.idx = idx;
     this._splice(idx, 0, block);
     this._update_block_indices_from(idx + 1);
+
+    return this;
   };
 
   Editor.prototype.remove_block = function editor_remove_block(idx) {
     this._splice(idx, 1);
     this._update_block_indices_from(idx);
+
+    return this;
   };
 
   Editor.prototype.remove_blocks_range = function editor_remove_blocks_range(from, to) {
     this._splice(from, to - from + 1);
     this._update_block_indices_from(from);
+
+    return this;
   };
 
   Editor.prototype.remove_blocks = function editor_remove_blocks(indices) {
@@ -472,6 +476,8 @@ var Editor = (function() {
     }
 
     this._update_block_indices_from(from);
+
+    return this;
   };
 
   Editor.prototype._update_block_indices_from = function _editor_update_block_indices_from(from) {

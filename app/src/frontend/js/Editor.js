@@ -11,8 +11,6 @@ var Editor = (function() {
     this._events_handlers();
   }
 
-  Editor.tag = "edtr-blck";
-
   Editor.prototype.push_block = function editor_push_block(block) {
     if (typeof block === 'string') {
       block = new Block(block);
@@ -22,6 +20,8 @@ var Editor = (function() {
 
     block.idx = this._model.length;
     this._push(block);
+
+    return this;
   };
 
   Editor.prototype.insert_block = function editor_insert_block(idx, block) {
@@ -34,16 +34,22 @@ var Editor = (function() {
     block.idx = idx;
     this._splice(idx, 0, block);
     this._update_block_indices_from(idx + 1);
+
+    return this;
   };
 
   Editor.prototype.remove_block = function editor_remove_block(idx) {
     this._splice(idx, 1);
     this._update_block_indices_from(idx);
+
+    return this;
   };
 
   Editor.prototype.remove_blocks_range = function editor_remove_blocks_range(from, to) {
     this._splice(from, to - from + 1);
     this._update_block_indices_from(from);
+
+    return this;
   };
 
   Editor.prototype.remove_blocks = function editor_remove_blocks(indices) {
@@ -63,6 +69,8 @@ var Editor = (function() {
     }
 
     this._update_block_indices_from(from);
+
+    return this;
   };
 
   Editor.prototype._update_block_indices_from = function _editor_update_block_indices_from(from) {

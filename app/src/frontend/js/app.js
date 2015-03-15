@@ -19,11 +19,10 @@ $(document).ready(function() {
   var editor = new Editor();
 
   editor.push_block('Это первая строка');
-  editor.push_block();
-  editor.push_block();
+  editor.push_block().push_block();
   editor.push_block('Это вторая строка');
 
   editor.insert_block(2, 'Вставка');
 
-  editor.remove_blocks_range(3, 4);
+  //editor.remove_blocks_range(3, 4);
 });
