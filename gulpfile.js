@@ -1,6 +1,7 @@
 var gulp = require('gulp'),
   stylus = require('gulp-stylus'),
-  run = require('gulp-run');
+  run = require('gulp-run'),
+  autoprefixer = require('gulp-autoprefixer');
 
 gulp.task('dev', ['stylus-dev', 'js-dev', 'move-dev', 'watch-dev']);
 
@@ -8,6 +9,10 @@ gulp.task('stylus-dev', function() {
   gulp.src('app/src/frontend/stylus/*.styl')
     .pipe(stylus({
       'include css': true,
+    }))
+    .pipe(autoprefixer({
+      browsers: ['last 2 versions'],
+      cascade: true
     }))
     .pipe(gulp.dest('app/www/static/css'));
 });
