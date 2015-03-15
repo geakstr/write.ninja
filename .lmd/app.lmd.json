@@ -1,11 +1,11 @@
 {
-    "name": "write.ninjs",
+    "name": "write.ninja",
     "root": "../",
     "modules": {
         "./<%= file %>": "app/private/js/*.js",
         "jQuery" : "@jQuery"
     },
     "main": "./app",
-    "output": "app/public/static/js/app.build.js",
+    "output": "app/public/static/js/app.js",
     "shortcuts": true
 }
