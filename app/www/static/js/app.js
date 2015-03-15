@@ -309,19 +309,96 @@ sb.on('stats:before-require-count', function (moduleName, module) {
     main(lmd_trigger('lmd-register:decorate-require', 'main', lmd_require)[1], output.exports, output);
 })/*DO NOT ADD ; !*/
 (this,(function (require, exports, module) { /* wrapped by builder */
+jQuery.fn.insertAt = function(index, element) {
+  var lastIndex = this.children().size()
+  if (index < 0) {
+    index = Math.max(0, lastIndex + 1 + index)
+  }
+  this.append(element)
+  if (index < lastIndex) {
+    this.children().eq(index).before(this.children().last())
+  }
+  return this;
+}
+
 $(document).ready(function() {
   var $ = require('jquery'),
     Selection = require('./Selection'),
-    Editor = require('./Editor');
+    Editor = require('./Editor'),
+    Block = require('./Block');
 
   var editor = new Editor();
+
+  editor.push_block('Это первая строка');
+  editor.push_block();
+  editor.push_block();
+  editor.push_block('Это вторая строка');
+
+  editor.insert_block(2, 'Вставка');
+
+  editor.remove_blocks_range(3, 4);
 });
 }),{
 "./Block": (function (require, exports, module) { /* wrapped by builder */
-var Block = (function() {
-  function Block() {
+var $ = require('jquery'),
+  Editor = require('./Editor');
 
+var Block = (function() {
+  function Block(text) {
+    this._idx = 0;
+    this._text = text;
+    this._type = this.detect_type(text);
+    this._dom = $(this.format());
   }
+
+  Object.defineProperty(Block.prototype, 'idx', {
+    get: function() {
+      return this._idx;
+    },
+    set: function(idx) {
+      this._idx = idx;
+      this._dom = $(this.format());
+    },
+    enumerable: true
+  });
+
+  Object.defineProperty(Block.prototype, 'text', {
+    get: function() {
+      return this._text;
+    },
+    set: function(text) {
+      this._text = text;
+      this._dom = $(this.format());
+    },
+    enumerable: true
+  });
+
+  Object.defineProperty(Block.prototype, 'dom', {
+    get: function() {
+      return this._dom;
+    },
+    set: function(dom) {
+      this._dom = dom;
+    },
+    enumerable: true
+  });
+
+  Block.prototype.detect_type = function(text) {
+    text = text.trim();
+
+    var type = 'note';
+    if (text.length === 0) type = 'empty';
+    else if (text[0] === '-') type = 'task';
+
+    return type;
+  };
+
+  Block.prototype.format = function block_format() {
+    var css = Editor.tag,
+      attr = 'class="' + css + '" data-idx="' + this._idx + '"';
+
+    return '<p ' + attr + '>' + this._text + '</p>';
+  };
 
 
   return Block;
@@ -330,24 +407,114 @@ var Block = (function() {
 module.exports = Block;
 }),
 "./Editor": (function (require, exports, module) { /* wrapped by builder */
-var Selection = require('./Selection');
+var Selection = require('./Selection'),
+  Block = require('./Block');
 
 var Editor = (function() {
   function Editor() {
-    this.$el = $('#editor');
-    this.model = [];
+    this._$el = $('#editor');
 
-    this.events_handlers();
+    this._dom = [];
+    this._model = [];
+
+    this._events_handlers();
   }
 
-  Editor.prototype.onmouseup = function editor_onmouseup() {
+  Editor.tag = "edtr-blck";
+
+  Editor.prototype.push_block = function editor_push_block(block) {
+    if (typeof block === 'string') {
+      block = new Block(block);
+    } else if (typeof block === 'undefined') {
+      block = new Block('');
+    }
+
+    block.idx = this._model.length;
+    this._push(block);
+  };
+
+  Editor.prototype.insert_block = function editor_insert_block(idx, block) {
+    if (typeof block === 'string') {
+      block = new Block(block);
+    } else if (typeof block === 'undefined') {
+      block = new Block('');
+    }
+
+    block.idx = idx;
+    this._splice(idx, 0, block);
+    this._update_block_indices_from(idx + 1);
+  };
+
+  Editor.prototype.remove_block = function editor_remove_block(idx) {
+    this._splice(idx, 1);
+    this._update_block_indices_from(idx);
+  };
+
+  Editor.prototype.remove_blocks_range = function editor_remove_blocks_range(from, to) {
+    this._splice(from, to - from + 1);
+    this._update_block_indices_from(from);
+  };
+
+  Editor.prototype.remove_blocks = function editor_remove_blocks(indices) {
+    indices.sort(function(a, b) {
+      return a - b;
+    });
+
+    var from = indices[0],
+      subtractor = 0;
+
+    if (indices.length === 2 && indices[1] - 1 === from) {
+      this._splice(from, indices[1] - from + 1);
+    } else {
+      indices.forEach(function(el, idx) {
+        this._splice(el - subtractor++, 1);
+      }.bind(this));
+    }
+
+    this._update_block_indices_from(from);
+  };
+
+  Editor.prototype._update_block_indices_from = function _editor_update_block_indices_from(from) {
+    for (var i = from; i < this._model.length; i++) {
+      this._model[i].idx = i;
+      this._dom[i].attr('data-idx', i);
+    }
+  };
+
+  Editor.prototype._update_block_indices = function _editor_update_block_indices() {
+    this._update_block_indices_from(0);
+  };
+
+  Editor.prototype._splice = function _editor_splice(idx, n, block) {
+    var removed_dom = [];
+    if (typeof block === 'undefined') {
+      this._model.splice(idx, n);
+      removed_dom = this._dom.splice(idx, n);
+      removed_dom.forEach(function(element) {
+        element.remove();
+      });
+    } else {
+      this._model.splice(idx, n, block);
+      this._dom.splice(idx, n, block.dom);
+      this._$el.insertAt(idx, block.dom);
+    }
+    return removed_dom;
+  };
+
+  Editor.prototype._push = function _editor_push(block) {
+    this._model.push(block);
+    this._dom.push(block.dom);
+    this._$el.append(block.dom);
+  };
+
+  Editor.prototype._onmouseup = function _editor_onmouseup() {
     var sel_info = Selection.get_info();
     console.log(Selection.toString());
   };
 
-  Editor.prototype.events_handlers = function editor_events_handlers() {
-    this.$el.on({
-      mouseup: this.onmouseup
+  Editor.prototype._events_handlers = function _editor_events_handlers() {
+    this._$el.on({
+      mouseup: this._onmouseup
     });
   };
 
