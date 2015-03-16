@@ -14,7 +14,7 @@ var Block = (function() {
     },
     set: function(idx) {
       this._idx = idx;
-      this._dom = $(this.format());
+      this._dom.attr('data-idx', idx);
     },
     enumerable: true
   });
@@ -25,7 +25,7 @@ var Block = (function() {
     },
     set: function(text) {
       this._text = text;
-      this._dom = $(this.format());
+      this._dom.text(text);
     },
     enumerable: true
   });

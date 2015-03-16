@@ -12,4 +12,6 @@ $(document).ready(function() {
   editor.push_block('Это вторая строка');
 
   editor.insert_block(1, 'Вставка');
+
+  editor.remove_blocks([0, 3]);
 });

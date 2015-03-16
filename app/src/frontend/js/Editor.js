@@ -4,8 +4,6 @@ var Selection = require('./Selection'),
 var Editor = (function() {
   function Editor() {
     this._$el = $('#editor');
-
-    this._dom = [];
     this._model = [];
 
     this._events_handlers();
@@ -41,7 +39,6 @@ var Editor = (function() {
   Editor.prototype.remove_block = function editor_remove_block(idx) {
     this._splice(idx, 1);
     this._update_block_indices_from(idx);
-
     return this;
   };
 
@@ -76,7 +73,6 @@ var Editor = (function() {
   Editor.prototype._update_block_indices_from = function _editor_update_block_indices_from(from) {
     for (var i = from; i < this._model.length; i++) {
       this._model[i].idx = i;
-      this._dom[i].attr('data-idx', i);
     }
   };
 
@@ -85,24 +81,21 @@ var Editor = (function() {
   };
 
   Editor.prototype._splice = function _editor_splice(idx, n, block) {
-    var removed_dom = [];
+    var removed = [];
     if (typeof block === 'undefined') {
-      this._model.splice(idx, n);
-      removed_dom = this._dom.splice(idx, n);
-      removed_dom.forEach(function(element) {
-        element.remove();
+      removed = this._model.splice(idx, n);
+      removed.forEach(function(element) {
+        element.dom.remove();
       });
     } else {
       this._model.splice(idx, n, block);
-      this._dom.splice(idx, n, block.dom);
       this._$el.insertAt(idx, block.dom);
     }
-    return removed_dom;
+    return removed;
   };
 
   Editor.prototype._push = function _editor_push(block) {
     this._model.push(block);
-    this._dom.push(block.dom);
     this._$el.append(block.dom);
   };
 
