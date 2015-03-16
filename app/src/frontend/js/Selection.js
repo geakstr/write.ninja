@@ -1,66 +1,70 @@
 var Selection = (function() {
   function Selection() {}
 
-  Selection.get_info = function selection_get_info() {
+  Selection.getInfo = function selectionGetInfo() {
     var sel = window.getSelection();
-    if (sel.anchorNode === null && sel.focusNode === null) return null;
-
-    var $anchor_node = $(sel.anchorNode),
-      $focus_node = $(sel.focusNode);
-
-    if ($anchor_node.hasClass('edtr-blck') === false) {
-      $anchor_node = $anchor_node.parents('.edtr-blck');
-    }
-    if ($focus_node.hasClass('edtr-blck') === false) {
-      $focus_node = $focus_node.parents('.edtr-blck');
+    if (sel.anchorNode === null && sel.focusNode === null) {
+      return null;
     }
 
-    var start_idx = $anchor_node.attr('data-idx'),
-      end_idx = $focus_node.attr('data-idx');
+    var $anchorNode = $(sel.anchorNode);
+    var $focusNode = $(sel.focusNode);
 
-    if (isNaN(start_idx) || isNaN(end_idx)) return null;
-
-    if (start_idx > end_idx) {
-      var tmp_start_idx = start_idx;
-      start_idx = end_idx;
-      end_idx = tmp_start_idx;
-
-      var $tmp_anchor_node = $anchor_node;
-      $anchor_node = $focus_node;
-      $focus_node = $tmp_anchor_node;
+    if ($anchorNode.hasClass('edtr-blck') === false) {
+      $anchorNode = $anchorNode.parents('.edtr-blck');
+    }
+    if ($focusNode.hasClass('edtr-blck') === false) {
+      $focusNode = $focusNode.parents('.edtr-blck');
     }
 
-    var start_pos = this.get_pos($anchor_node[0]).start,
-      end_pos = this.get_pos($focus_node[0]).end,
-      is_caret = start_idx === end_idx && start_pos === end_pos,
-      is_range = !is_caret;
+    var startIdx = $anchorNode.attr('data-idx');
+    var endIdx = $focusNode.attr('data-idx');
+
+    if (isNaN(startIdx) || isNaN(endIdx)) {
+      return null;
+    }
+
+    if (startIdx > endIdx) {
+      var tmpStartIdx = startIdx;
+      startIdx = endIdx;
+      endIdx = tmpStartIdx;
+
+      var $tmpAnchorNode = $anchorNode;
+      $anchorNode = $focusNode;
+      $focusNode = $tmpAnchorNode;
+    }
+
+    var startPos = this.getPos($anchorNode[0]).start;
+    var endPos = this.getPos($focusNode[0]).end;
+    var isCaret = startIdx === endIdx && startPos === endPos;
+    var isRange = !isCaret;
 
     return {
-      is_caret: is_caret,
-      start_idx: start_idx,
-      end_idx: end_idx,
-      start_pos: start_pos,
-      end_pos: end_pos
+      isCaret: isCaret,
+      startIdx: startIdx,
+      endIdx: endIdx,
+      startPos: startPos,
+      endPos: endPos
     }
   };
 
-  Selection.get_pos = function selection_get_pos(el) {
-    var sel = el.ownerDocument.defaultView.getSelection(),
-      start = 0,
-      end = 0;
+  Selection.getPos = function selectionSetPos(el) {
+    var sel = el.ownerDocument.defaultView.getSelection();
+    var start = 0;
+    var end = 0;
 
     if (sel.rangeCount > 0) {
-      var range = sel.getRangeAt(0),
-        clone_range = range.cloneRange();
+      var range = sel.getRangeAt(0);
+      var cloneRange = range.cloneRange();
 
-      clone_range.selectNodeContents(el);
-      clone_range.setStart(range.startContainer, range.startOffset);
-      start = el.textContent.length - clone_range.toString().length;
+      cloneRange.selectNodeContents(el);
+      cloneRange.setStart(range.startContainer, range.startOffset);
+      start = el.textContent.length - cloneRange.toString().length;
 
-      clone_range = range.cloneRange();
-      clone_range.selectNodeContents(el);
-      clone_range.setEnd(range.endContainer, range.endOffset);
-      end = clone_range.toString().length;
+      cloneRange = range.cloneRange();
+      cloneRange.selectNodeContents(el);
+      cloneRange.setEnd(range.endContainer, range.endOffset);
+      end = cloneRange.toString().length;
     }
 
     return {
@@ -69,27 +73,27 @@ var Selection = (function() {
     };
   };
 
-  Selection.set_caret = function selection_set_caret(node, offset) {
+  Selection.setCaret = function selectionSetCaret(node, offset) {
     var sel = window.getSelection();
 
-    var tw = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null, null),
-      range = document.createRange(),
-      cur_node = null,
-      cur_offset = 0,
-      was_rng_set = false;
+    var tw = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null, null);
+    var range = document.createRange();
+    var curNode = null;
+    var curOffset = 0;
+    var wasRngSet = false;
 
-    while (cur_node = tw.nextNode()) {
-      cur_offset += cur_node.nodeValue.length;
-      if (cur_offset >= offset) {
-        offset = cur_node.nodeValue.length + offset - cur_offset;
-        range.setStart(cur_node, offset);
-        range.setEnd(cur_node, offset);
-        was_rng_set = true;
+    while (curNode = tw.nextNode()) {
+      curOffset += curNode.nodeValue.length;
+      if (curOffset >= offset) {
+        offset = curNode.nodeValue.length + offset - curOffset;
+        range.setStart(curNode, offset);
+        range.setEnd(curNode, offset);
+        wasRngSet = true;
         break;
       }
     }
 
-    if (!was_rng_set) {
+    if (!wasRngSet) {
       range.selectNodeContents(node);
       range.collapse(false);
     }
@@ -99,9 +103,11 @@ var Selection = (function() {
   }
 
   Selection.toString = function toString() {
-    var sel_info = this.get_info();
-    return sel_info.is_caret + " " + sel_info.start_idx + " " +
-      sel_info.end_idx + " " + sel_info.start_pos + " " + sel_info.end_pos;
+    var selInfo = this.getInfo();
+
+    var ret = selInfo.isCaret + ' ' + selInfo.startIdx + ' ';
+    ret += selInfo.endIdx + ' ' + selInfo.startPos + ' ' + selInfo.endPos;
+    return ret;
   }
 
   return Selection;

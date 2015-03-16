@@ -1,7 +1,8 @@
 var gulp = require('gulp'),
   stylus = require('gulp-stylus'),
   run = require('gulp-run'),
-  autoprefixer = require('gulp-autoprefixer');
+  autoprefixer = require('gulp-autoprefixer'),
+  jscs = require('gulp-jscs');
 
 gulp.task('dev', ['stylus-dev', 'js-dev', 'move-dev', 'watch-dev']);
 
@@ -19,6 +20,11 @@ gulp.task('stylus-dev', function() {
 
 gulp.task('js-dev', function() {
   run('lmd build app').exec();
+});
+
+gulp.task('jscs', function() {
+  return gulp.src('app/src/frontend/js/*.js')
+    .pipe(jscs());
 });
 
 gulp.task('move-dev', function() {

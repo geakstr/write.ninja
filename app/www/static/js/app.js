@@ -310,21 +310,21 @@ sb.on('stats:before-require-count', function (moduleName, module) {
 })/*DO NOT ADD ; !*/
 (this,(function (require, exports, module) { /* wrapped by builder */
 $(document).ready(function() {
-  var $ = require('jquery'),
-    Utils = require('./Utils'),
-    Selection = require('./Selection'),
-    Editor = require('./Editor'),
-    Block = require('./Block');
+  var $ = require('jquery');
+  var Utils = require('./Utils');
+  var Selection = require('./Selection');
+  var Editor = require('./Editor');
+  var Block = require('./Block');
 
   var editor = new Editor();
 
-  editor.push_block('Это первая строка');
-  editor.push_block().push_block();
-  editor.push_block('Это вторая строка');
+  editor.pushBlock('Это первая строка');
+  editor.pushBlock().pushBlock();
+  editor.pushBlock('Это вторая строка');
 
-  editor.insert_block(1, 'Вставка');
+  editor.insertBlock(1, 'Вставка');
 
-  editor.remove_blocks([0, 3]);
+  editor.removeBlocks([0, 3]);
 });
 }),{
 "./Block": (function (require, exports, module) { /* wrapped by builder */
@@ -334,7 +334,7 @@ var Block = (function() {
   function Block(text) {
     this._idx = 0;
     this._text = text;
-    this._type = this.detect_type(text);
+    this._type = this.detectType(text);
     this._dom = $(this.format());
   }
 
@@ -355,7 +355,18 @@ var Block = (function() {
     },
     set: function(text) {
       this._text = text;
+      this.type = this.detectType(text);
       this._dom.text(text);
+    },
+    enumerable: true
+  });
+
+  Object.defineProperty(Block.prototype, 'type', {
+    get: function() {
+      return this._type;
+    },
+    set: function(type) {
+      this._type = type;
     },
     enumerable: true
   });
@@ -370,23 +381,25 @@ var Block = (function() {
     enumerable: true
   });
 
-  Block.prototype.detect_type = function(text) {
+  Block.prototype.detectType = function blockDetectType(text) {
     text = text.trim();
 
     var type = 'note';
-    if (text.length === 0) type = 'empty';
-    else if (text[0] === '-') type = 'task';
+    if (text.length === 0) {
+      type = 'empty';
+    } else if (text[0] === '-') {
+      type = 'task';
+    }
 
     return type;
   };
 
-  Block.prototype.format = function block_format() {
-    var css = 'edtr-blck',
-      attr = 'class="' + css + '" data-idx="' + this._idx + '"';
+  Block.prototype.format = function blockFormat() {
+    var css = 'edtr-blck';
+    var attr = 'class="' + css + '" data-idx="' + this._idx + '"';
 
     return '<p ' + attr + '>' + this._text + '</p>';
   };
-
 
   return Block;
 })();
@@ -394,18 +407,18 @@ var Block = (function() {
 module.exports = Block;
 }),
 "./Editor": (function (require, exports, module) { /* wrapped by builder */
-var Selection = require('./Selection'),
-  Block = require('./Block');
+var Selection = require('./Selection');
+var Block = require('./Block');
 
 var Editor = (function() {
   function Editor() {
-    this._$el = $('#editor');
+    this._dom = $('#editor');
     this._model = [];
 
-    this._events_handlers();
+    this._eventsHandlers();
   }
 
-  Editor.prototype.push_block = function editor_push_block(block) {
+  Editor.prototype.pushBlock = function editorPushBlock(block) {
     if (typeof block === 'string') {
       block = new Block(block);
     } else if (typeof block === 'undefined') {
@@ -418,7 +431,7 @@ var Editor = (function() {
     return this;
   };
 
-  Editor.prototype.insert_block = function editor_insert_block(idx, block) {
+  Editor.prototype.insertBlock = function editorInsertBlock(idx, block) {
     if (typeof block === 'string') {
       block = new Block(block);
     } else if (typeof block === 'undefined') {
@@ -427,31 +440,31 @@ var Editor = (function() {
 
     block.idx = idx;
     this._splice(idx, 0, block);
-    this._update_block_indices_from(idx + 1);
+    this._updateBlockIndicesFrom(idx + 1);
 
     return this;
   };
 
-  Editor.prototype.remove_block = function editor_remove_block(idx) {
+  Editor.prototype.removeBlock = function editorRemoveBlock(idx) {
     this._splice(idx, 1);
-    this._update_block_indices_from(idx);
+    this._updateBlockIndicesFrom(idx);
     return this;
   };
 
-  Editor.prototype.remove_blocks_range = function editor_remove_blocks_range(from, to) {
+  Editor.prototype.removeBlocksRange = function editorRemoveBlocksRange(from, to) {
     this._splice(from, to - from + 1);
-    this._update_block_indices_from(from);
+    this._updateBlockIndicesFrom(from);
 
     return this;
   };
 
-  Editor.prototype.remove_blocks = function editor_remove_blocks(indices) {
+  Editor.prototype.removeBlocks = function editorRemoveBlocks(indices) {
     indices.sort(function(a, b) {
       return a - b;
     });
 
-    var from = indices[0],
-      subtractor = 0;
+    var from = indices[0];
+    var subtractor = 0;
 
     if (indices.length === 2 && indices[1] - 1 === from) {
       this._splice(from, indices[1] - from + 1);
@@ -461,47 +474,47 @@ var Editor = (function() {
       }.bind(this));
     }
 
-    this._update_block_indices_from(from);
+    this._updateBlockIndicesFrom(from);
 
     return this;
   };
 
-  Editor.prototype._update_block_indices_from = function _editor_update_block_indices_from(from) {
+  Editor.prototype._updateBlockIndicesFrom = function _editorUpdateBlockIndicesFrom(from) {
     for (var i = from; i < this._model.length; i++) {
       this._model[i].idx = i;
     }
   };
 
-  Editor.prototype._update_block_indices = function _editor_update_block_indices() {
-    this._update_block_indices_from(0);
+  Editor.prototype._updateBlockIndices = function _editorUpdateBlockIndices() {
+    this._updateBlockIndicesFrom(0);
   };
 
-  Editor.prototype._splice = function _editor_splice(idx, n, block) {
+  Editor.prototype._splice = function _editorSplice(idx, n, block) {
     var removed = [];
     if (typeof block === 'undefined') {
       removed = this._model.splice(idx, n);
-      removed.forEach(function(element) {
-        element.dom.remove();
+      removed.forEach(function(removedBlock) {
+        removedBlock.dom.remove();
       });
     } else {
       this._model.splice(idx, n, block);
-      this._$el.insertAt(idx, block.dom);
+      this._dom.insertAt(idx, block.dom);
     }
     return removed;
   };
 
-  Editor.prototype._push = function _editor_push(block) {
+  Editor.prototype._push = function _editorOush(block) {
     this._model.push(block);
-    this._$el.append(block.dom);
+    this._dom.append(block.dom);
   };
 
-  Editor.prototype._onmouseup = function _editor_onmouseup() {
-    var sel_info = Selection.get_info();
+  Editor.prototype._onmouseup = function _editorOnmouseup() {
+    var selInfo = Selection.getInfo();
     console.log(Selection.toString());
   };
 
-  Editor.prototype._events_handlers = function _editor_events_handlers() {
-    this._$el.on({
+  Editor.prototype._eventsHandlers = function _editorEventsHandlers() {
+    this._dom.on({
       mouseup: this._onmouseup
     });
   };
@@ -515,66 +528,70 @@ module.exports = Editor;
 var Selection = (function() {
   function Selection() {}
 
-  Selection.get_info = function selection_get_info() {
+  Selection.getInfo = function selectionGetInfo() {
     var sel = window.getSelection();
-    if (sel.anchorNode === null && sel.focusNode === null) return null;
-
-    var $anchor_node = $(sel.anchorNode),
-      $focus_node = $(sel.focusNode);
-
-    if ($anchor_node.hasClass('edtr-blck') === false) {
-      $anchor_node = $anchor_node.parents('.edtr-blck');
-    }
-    if ($focus_node.hasClass('edtr-blck') === false) {
-      $focus_node = $focus_node.parents('.edtr-blck');
+    if (sel.anchorNode === null && sel.focusNode === null) {
+      return null;
     }
 
-    var start_idx = $anchor_node.attr('data-idx'),
-      end_idx = $focus_node.attr('data-idx');
+    var $anchorNode = $(sel.anchorNode);
+    var $focusNode = $(sel.focusNode);
 
-    if (isNaN(start_idx) || isNaN(end_idx)) return null;
-
-    if (start_idx > end_idx) {
-      var tmp_start_idx = start_idx;
-      start_idx = end_idx;
-      end_idx = tmp_start_idx;
-
-      var $tmp_anchor_node = $anchor_node;
-      $anchor_node = $focus_node;
-      $focus_node = $tmp_anchor_node;
+    if ($anchorNode.hasClass('edtr-blck') === false) {
+      $anchorNode = $anchorNode.parents('.edtr-blck');
+    }
+    if ($focusNode.hasClass('edtr-blck') === false) {
+      $focusNode = $focusNode.parents('.edtr-blck');
     }
 
-    var start_pos = this.get_pos($anchor_node[0]).start,
-      end_pos = this.get_pos($focus_node[0]).end,
-      is_caret = start_idx === end_idx && start_pos === end_pos,
-      is_range = !is_caret;
+    var startIdx = $anchorNode.attr('data-idx');
+    var endIdx = $focusNode.attr('data-idx');
+
+    if (isNaN(startIdx) || isNaN(endIdx)) {
+      return null;
+    }
+
+    if (startIdx > endIdx) {
+      var tmpStartIdx = startIdx;
+      startIdx = endIdx;
+      endIdx = tmpStartIdx;
+
+      var $tmpAnchorNode = $anchorNode;
+      $anchorNode = $focusNode;
+      $focusNode = $tmpAnchorNode;
+    }
+
+    var startPos = this.getPos($anchorNode[0]).start;
+    var endPos = this.getPos($focusNode[0]).end;
+    var isCaret = startIdx === endIdx && startPos === endPos;
+    var isRange = !isCaret;
 
     return {
-      is_caret: is_caret,
-      start_idx: start_idx,
-      end_idx: end_idx,
-      start_pos: start_pos,
-      end_pos: end_pos
+      isCaret: isCaret,
+      startIdx: startIdx,
+      endIdx: endIdx,
+      startPos: startPos,
+      endPos: endPos
     }
   };
 
-  Selection.get_pos = function selection_get_pos(el) {
-    var sel = el.ownerDocument.defaultView.getSelection(),
-      start = 0,
-      end = 0;
+  Selection.getPos = function selectionSetPos(el) {
+    var sel = el.ownerDocument.defaultView.getSelection();
+    var start = 0;
+    var end = 0;
 
     if (sel.rangeCount > 0) {
-      var range = sel.getRangeAt(0),
-        clone_range = range.cloneRange();
+      var range = sel.getRangeAt(0);
+      var cloneRange = range.cloneRange();
 
-      clone_range.selectNodeContents(el);
-      clone_range.setStart(range.startContainer, range.startOffset);
-      start = el.textContent.length - clone_range.toString().length;
+      cloneRange.selectNodeContents(el);
+      cloneRange.setStart(range.startContainer, range.startOffset);
+      start = el.textContent.length - cloneRange.toString().length;
 
-      clone_range = range.cloneRange();
-      clone_range.selectNodeContents(el);
-      clone_range.setEnd(range.endContainer, range.endOffset);
-      end = clone_range.toString().length;
+      cloneRange = range.cloneRange();
+      cloneRange.selectNodeContents(el);
+      cloneRange.setEnd(range.endContainer, range.endOffset);
+      end = cloneRange.toString().length;
     }
 
     return {
@@ -583,27 +600,27 @@ var Selection = (function() {
     };
   };
 
-  Selection.set_caret = function selection_set_caret(node, offset) {
+  Selection.setCaret = function selectionSetCaret(node, offset) {
     var sel = window.getSelection();
 
-    var tw = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null, null),
-      range = document.createRange(),
-      cur_node = null,
-      cur_offset = 0,
-      was_rng_set = false;
+    var tw = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null, null);
+    var range = document.createRange();
+    var curNode = null;
+    var curOffset = 0;
+    var wasRngSet = false;
 
-    while (cur_node = tw.nextNode()) {
-      cur_offset += cur_node.nodeValue.length;
-      if (cur_offset >= offset) {
-        offset = cur_node.nodeValue.length + offset - cur_offset;
-        range.setStart(cur_node, offset);
-        range.setEnd(cur_node, offset);
-        was_rng_set = true;
+    while (curNode = tw.nextNode()) {
+      curOffset += curNode.nodeValue.length;
+      if (curOffset >= offset) {
+        offset = curNode.nodeValue.length + offset - curOffset;
+        range.setStart(curNode, offset);
+        range.setEnd(curNode, offset);
+        wasRngSet = true;
         break;
       }
     }
 
-    if (!was_rng_set) {
+    if (!wasRngSet) {
       range.selectNodeContents(node);
       range.collapse(false);
     }
@@ -613,9 +630,11 @@ var Selection = (function() {
   }
 
   Selection.toString = function toString() {
-    var sel_info = this.get_info();
-    return sel_info.is_caret + " " + sel_info.start_idx + " " +
-      sel_info.end_idx + " " + sel_info.start_pos + " " + sel_info.end_pos;
+    var selInfo = this.getInfo();
+
+    var ret = selInfo.isCaret + ' ' + selInfo.startIdx + ' ';
+    ret += selInfo.endIdx + ' ' + selInfo.startPos + ' ' + selInfo.endPos;
+    return ret;
   }
 
   return Selection;

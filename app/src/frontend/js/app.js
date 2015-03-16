@@ -1,17 +1,17 @@
 $(document).ready(function() {
-  var $ = require('jquery'),
-    Utils = require('./Utils'),
-    Selection = require('./Selection'),
-    Editor = require('./Editor'),
-    Block = require('./Block');
+  var $ = require('jquery');
+  var Utils = require('./Utils');
+  var Selection = require('./Selection');
+  var Editor = require('./Editor');
+  var Block = require('./Block');
 
   var editor = new Editor();
 
-  editor.push_block('Это первая строка');
-  editor.push_block().push_block();
-  editor.push_block('Это вторая строка');
+  editor.pushBlock('Это первая строка');
+  editor.pushBlock().pushBlock();
+  editor.pushBlock('Это вторая строка');
 
-  editor.insert_block(1, 'Вставка');
+  editor.insertBlock(1, 'Вставка');
 
-  editor.remove_blocks([0, 3]);
+  editor.removeBlocks([0, 3]);
 });

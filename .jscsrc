@@ -1,0 +1,20 @@
+{
+    "preset": "airbnb",
+    "fileExtensions": [".js"],
+
+    "requireParenthesesAroundIIFE": true,
+    "requireLineFeedAtFileEnd": null,
+    "maximumLineLength": 120,
+    "validateLineBreaks": "LF",
+    "validateIndentation": 2,
+
+    "disallowKeywords": ["with"],
+    "disallowSpacesInsideObjectBrackets": null,
+    "disallowImplicitTypeConversion": ["string"],
+
+    "safeContextKeyword": "_this",
+
+    "excludeFiles": [
+        "test/data/**"
+    ]
+}
