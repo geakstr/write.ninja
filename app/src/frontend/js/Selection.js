@@ -114,8 +114,8 @@ var Selection = (function() {
     sel.addRange(range);
   }
 
-  Selection.toString = function toString() {
-    var selInfo = this.getInfo();
+  Selection.toString = function toString(model) {
+    var selInfo = this.getInfo(model);
 
     var ret = selInfo.isCaret + ' ' + selInfo.startIdx + ' ';
     ret += selInfo.endIdx + ' ' + selInfo.startPos + ' ' + selInfo.endPos;

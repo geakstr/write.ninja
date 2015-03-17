@@ -175,6 +175,10 @@ var Editor = (function() {
   Editor.prototype._onkeydown = function _editorOnkeydown(event) {
     var sel = Selection.getInfo(this._model);
 
+    if (sel === null) {
+      return true;
+    }
+
     var keyCode = event.keyCode;
     var keyChar = String.fromCharCode(keyCode).toLowerCase();
 

@@ -68,7 +68,12 @@ var Block = (function() {
     var css = 'edtr-blck';
     var attr = 'class="' + css + '" data-idx="' + this._idx + '"';
 
-    return '<p ' + attr + '>' + this._text + '</p>';
+    var text = this._text;
+    if (text.length === 0) {
+      return '<br ' + attr + '/>';
+    }
+
+    return '<p ' + attr + '>' + text + '</p>';
   };
 
   return Block;

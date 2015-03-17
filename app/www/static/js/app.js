@@ -398,7 +398,12 @@ var Block = (function() {
     var css = 'edtr-blck';
     var attr = 'class="' + css + '" data-idx="' + this._idx + '"';
 
-    return '<p ' + attr + '>' + this._text + '</p>';
+    var text = this._text;
+    if (text.length === 0) {
+      return '<br ' + attr + '/>';
+    }
+
+    return '<p ' + attr + '>' + text + '</p>';
   };
 
   return Block;
@@ -584,6 +589,10 @@ var Editor = (function() {
   Editor.prototype._onkeydown = function _editorOnkeydown(event) {
     var sel = Selection.getInfo(this._model);
 
+    if (sel === null) {
+      return true;
+    }
+
     var keyCode = event.keyCode;
     var keyChar = String.fromCharCode(keyCode).toLowerCase();
 
@@ -733,8 +742,8 @@ var Selection = (function() {
     sel.addRange(range);
   }
 
-  Selection.toString = function toString() {
-    var selInfo = this.getInfo();
+  Selection.toString = function toString(model) {
+    var selInfo = this.getInfo(model);
 
     var ret = selInfo.isCaret + ' ' + selInfo.startIdx + ' ';
     ret += selInfo.endIdx + ' ' + selInfo.startPos + ' ' + selInfo.endPos;
