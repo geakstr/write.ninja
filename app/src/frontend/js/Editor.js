@@ -70,6 +70,79 @@ var Editor = (function() {
     return this;
   };
 
+  Editor.prototype.insertText = function editorInsertText(sel, newText) {
+    var isCarriageReturn = (typeof newText === 'undefined');
+
+    sel.leftText = sel.leftText.substring(0, sel.startPos);
+    sel.rightText = sel.rightText.substring(sel.endPos);
+
+    sel.startBlock.text = sel.leftText;
+    if (!isCarriageReturn) {
+      sel.startBlock.text += newText + sel.rightText;
+    }
+
+    if (sel.isRange) {
+      this.removeBlocksRange(sel.startIdx + 1, sel.endIdx);
+    }
+
+    if (isCarriageReturn) {
+      this.insertBlock(sel.startIdx + 1, sel.rightText);
+    }
+
+    return true;
+  };
+
+  Editor.prototype.removeText = function editorRemoveText(sel, keyCode) {
+    if (typeof keyCode === 'undefined') keyCode = 8;
+
+    var backspaceOffset = (keyCode === 8) ? -1 : 0;
+    var deleteOffset = (keyCode === 46) ? 1 : 0;
+
+    var caretInfo = {
+      idx: sel.startIdx,
+      pos: sel.startPos
+    };
+
+    if (sel.isCaret && keyCode === 8 && sel.startPos === 0) {
+      if (sel.startIdx === 0) {
+        return caretInfo;
+      }
+
+      sel.startBlock = this._model[--sel.startIdx];
+      sel.leftText = sel.startBlock.text;
+
+      backspaceOffset = 0;
+
+      caretInfo.idx = sel.startIdx;
+      caretInfo.pos = sel.leftText.length;
+
+      this.removeBlock(sel.endIdx);
+    } else if (sel.isCaret && keyCode === 46 && sel.rightText.length === sel.endPos) {
+      if (sel.endIdx === this._model.length - 1) {
+        return caretInfo;
+      }
+
+      sel.rightText = this._model[++sel.endIdx].text;
+
+      this.removeBlock(sel.endIdx);
+    } else {
+      if (sel.isRange) {
+        backspaceOffset = 0;
+        deleteOffset = 0;
+
+        this.removeBlocksRange(sel.startIdx + 1, sel.endIdx);
+      }
+      sel.leftText = sel.leftText.substring(0, sel.startPos + backspaceOffset);
+      sel.rightText = sel.rightText.substring(sel.endPos + deleteOffset);
+    }
+
+    sel.startBlock.text = sel.leftText + sel.rightText;
+
+    caretInfo.pos += backspaceOffset;
+
+    return caretInfo;
+  };
+
   Editor.prototype._updateBlockIndicesFrom = function _editorUpdateBlockIndicesFrom(from) {
     for (var i = from; i < this._model.length; i++) {
       this._model[i].idx = i;
@@ -99,14 +172,33 @@ var Editor = (function() {
     this._dom.append(block.dom);
   };
 
-  Editor.prototype._onmouseup = function _editorOnmouseup() {
-    var selInfo = Selection.getInfo();
-    console.log(Selection.toString());
+  Editor.prototype._onkeydown = function _editorOnkeydown(event) {
+    var sel = Selection.getInfo(this._model);
+
+    var keyCode = event.keyCode;
+    var keyChar = String.fromCharCode(keyCode).toLowerCase();
+
+    // Carriage return
+    if (keyCode === 13 || (keyChar === 'm' && event.ctrlKey)) {
+      event.preventDefault();
+
+      this.insertText(sel);
+      Selection.setCaret(this._model[sel.startIdx + 1].dom[0], 0);
+
+      return false;
+    } else if (keyCode === 8 || keyCode === 46) { // Backspace
+      event.preventDefault();
+
+      var caretInfo = this.removeText(sel, keyCode);
+      Selection.setCaret(this._model[caretInfo.idx].dom[0], caretInfo.pos);
+
+      return false;
+    }
   };
 
   Editor.prototype._eventsHandlers = function _editorEventsHandlers() {
     this._dom.on({
-      mouseup: this._onmouseup
+      keydown: this._onkeydown.bind(this)
     });
   };
 

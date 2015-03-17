@@ -13,5 +13,5 @@ $(document).ready(function() {
 
   editor.insertBlock(1, 'Вставка');
 
-  editor.removeBlocks([0, 3]);
+  // editor.removeBlocks([0, 3]);
 });

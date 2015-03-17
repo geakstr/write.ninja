@@ -1,7 +1,7 @@
 var Selection = (function() {
   function Selection() {}
 
-  Selection.getInfo = function selectionGetInfo() {
+  Selection.getInfo = function selectionGetInfo(model) {
     var sel = window.getSelection();
     if (sel.anchorNode === null && sel.focusNode === null) {
       return null;
@@ -36,15 +36,27 @@ var Selection = (function() {
 
     var startPos = this.getPos($anchorNode[0]).start;
     var endPos = this.getPos($focusNode[0]).end;
+
+    var startBlock = model[startIdx];
+    var endBlock = model[endIdx];
+
+    var leftText = startBlock.text;
+    var rightText = endBlock.text;
+
     var isCaret = startIdx === endIdx && startPos === endPos;
     var isRange = !isCaret;
 
     return {
       isCaret: isCaret,
-      startIdx: startIdx,
-      endIdx: endIdx,
-      startPos: startPos,
-      endPos: endPos
+      isRange: isRange,
+      startPos: +startPos,
+      endPos: +endPos,
+      startIdx: +startIdx,
+      endIdx: +endIdx,
+      startBlock: startBlock,
+      endBlock: endBlock,
+      leftText: leftText,
+      rightText: rightText
     }
   };
 

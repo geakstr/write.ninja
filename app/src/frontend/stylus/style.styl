@@ -1,12 +1,16 @@
-@import "../css/reset.css"
+@import "kouto-swiss"
+
+* {
+  margin: 0;
+  padding: 0;
+}
+box-sizing-reset();
+normalize();
 
 $sans_serif = Verdana, Helvetica, Arial, sans-serif;
 $serif = Baskerville, Cochin, Georgia, Times, Times New Roman, serif;
 $base_font = $sans_serif;
 
-* {
-  box-sizing: border-box;
-}
 body {
   background: #fff;
   color: #333;
@@ -14,6 +18,7 @@ body {
   font-size: 18px;
   line-height: 22px;
 }
+
 #editor {
   width: 800px;
   min-height: 88px;
@@ -21,7 +26,7 @@ body {
   padding: 44px;
   outline: 1px solid #efefef;
 
-  p {
+  .edtr-blck {
     min-height: 22px;
   }
 }
