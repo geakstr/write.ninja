@@ -1,0 +1,17 @@
+{
+  "excludeFiles": [
+    ".git",
+    "node_modules",
+    "bower_components",
+    "*.sublime-project",
+    "*.sublime-workspace"
+  ],
+  "lang": "en,ru",
+  "fileExtensions": [
+    ".md",
+    ".html"
+  ],
+  "dictionary": [
+
+  ]
+}
