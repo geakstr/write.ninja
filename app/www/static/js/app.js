@@ -355,8 +355,17 @@ var Block = (function() {
     },
     set: function(text) {
       this._text = text;
-      this.type = this.detectType(text);
-      this._dom.text(text);
+      var newType = this.detectType(text);
+      if (this.type === newType) {
+        this.type = newType;
+        if (this.type === 'empty') {
+          this._dom.html('<br/>');
+        } else {
+          this._dom.text(text);
+        }
+      } else {
+        this._dom.text(text);
+      }
     },
     enumerable: true
   });
@@ -400,7 +409,7 @@ var Block = (function() {
 
     var text = this._text;
     if (text.length === 0) {
-      return '<br ' + attr + '/>';
+      text = '<br/>';
     }
 
     return '<p ' + attr + '>' + text + '</p>';
@@ -418,6 +427,7 @@ var Block = require('./Block');
 var Editor = (function() {
   function Editor() {
     this._dom = $('#editor');
+    this._dom.attr('spellcheck', false);
     this._model = [];
 
     this._eventsHandlers();
@@ -491,6 +501,7 @@ var Editor = (function() {
     sel.rightText = sel.rightText.substring(sel.endPos);
 
     sel.startBlock.text = sel.leftText;
+    console.log(sel.startBlock.text);
     if (!isCarriageReturn) {
       sel.startBlock.text += newText + sel.rightText;
     }
@@ -503,7 +514,7 @@ var Editor = (function() {
       this.insertBlock(sel.startIdx + 1, sel.rightText);
     }
 
-    return true;
+    return sel;
   };
 
   Editor.prototype.removeText = function editorRemoveText(sel, keyCode) {
@@ -600,7 +611,7 @@ var Editor = (function() {
     if (keyCode === 13 || (keyChar === 'm' && event.ctrlKey)) {
       event.preventDefault();
 
-      this.insertText(sel);
+      var sel = this.insertText(sel);
       Selection.setCaret(this._model[sel.startIdx + 1].dom[0], 0);
 
       return false;

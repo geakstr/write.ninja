@@ -4,6 +4,7 @@ var Block = require('./Block');
 var Editor = (function() {
   function Editor() {
     this._dom = $('#editor');
+    this._dom.attr('spellcheck', false);
     this._model = [];
 
     this._eventsHandlers();
@@ -77,6 +78,7 @@ var Editor = (function() {
     sel.rightText = sel.rightText.substring(sel.endPos);
 
     sel.startBlock.text = sel.leftText;
+    console.log(sel.startBlock.text);
     if (!isCarriageReturn) {
       sel.startBlock.text += newText + sel.rightText;
     }
@@ -89,7 +91,7 @@ var Editor = (function() {
       this.insertBlock(sel.startIdx + 1, sel.rightText);
     }
 
-    return true;
+    return sel;
   };
 
   Editor.prototype.removeText = function editorRemoveText(sel, keyCode) {
@@ -186,7 +188,7 @@ var Editor = (function() {
     if (keyCode === 13 || (keyChar === 'm' && event.ctrlKey)) {
       event.preventDefault();
 
-      this.insertText(sel);
+      var sel = this.insertText(sel);
       Selection.setCaret(this._model[sel.startIdx + 1].dom[0], 0);
 
       return false;

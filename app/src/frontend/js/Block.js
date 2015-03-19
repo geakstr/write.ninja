@@ -25,8 +25,17 @@ var Block = (function() {
     },
     set: function(text) {
       this._text = text;
-      this.type = this.detectType(text);
-      this._dom.text(text);
+      var newType = this.detectType(text);
+      if (this.type === newType) {
+        this.type = newType;
+        if (this.type === 'empty') {
+          this._dom.html('<br/>');
+        } else {
+          this._dom.text(text);
+        }
+      } else {
+        this._dom.text(text);
+      }
     },
     enumerable: true
   });
@@ -70,7 +79,7 @@ var Block = (function() {
 
     var text = this._text;
     if (text.length === 0) {
-      return '<br ' + attr + '/>';
+      text = '<br/>';
     }
 
     return '<p ' + attr + '>' + text + '</p>';
