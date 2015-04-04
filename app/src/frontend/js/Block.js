@@ -26,7 +26,7 @@ var Block = (function() {
     set: function(text) {
       this._text = text;
       var newType = this.detectType(text);
-      if (this.type === newType) {
+      if (this.type !== newType) {
         this.type = newType;
         if (this.type === 'empty') {
           this._dom.html('<br/>');
