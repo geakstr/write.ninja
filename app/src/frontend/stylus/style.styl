@@ -25,19 +25,21 @@ body {
   width: 800px;
   min-height: 88px;
   margin: 44px auto;
-  padding: 44px;
   white-space: pre-wrap;
-  outline: 1px solid #efefef;
+  outline: none;
 
   .edtr-blck {
+    display: block;
+    width: 100%;
     min-height: 22px;    
+    color: #999;
     
-    &.-note {
-      color: #999;
-    }
+    &.-note {}
     
     &.-task {
       color: #333;
     }
+    
+    &.-empty {}
   }
 }
