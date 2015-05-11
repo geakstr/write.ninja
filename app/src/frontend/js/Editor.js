@@ -7,6 +7,8 @@ var Editor = (function() {
     this._dom.attr('spellcheck', false);
     this._model = [];
 
+    this._wasKeypress = false;
+
     this._eventsHandlers();
   }
 
@@ -78,7 +80,6 @@ var Editor = (function() {
     sel.rightText = sel.rightText.substring(sel.endPos);
 
     sel.startBlock.text = sel.leftText;
-    console.log(sel.startBlock.text);
     if (!isCarriageReturn) {
       sel.startBlock.text += newText + sel.rightText;
     }
@@ -175,14 +176,21 @@ var Editor = (function() {
   };
 
   Editor.prototype._onkeydown = function _editorOnkeydown(event) {
-    var sel = Selection.getInfo(this._model);
+    var keyCode = event.keyCode;
+    var keyChar = String.fromCharCode(keyCode).toLowerCase();
 
-    if (sel === null) {
+    this._wasKeypress = [37, 38, 39, 40].indexOf(event.keyCode) === -1;
+    if (this._wasKeypress) {
+      this._wasKeypress = !event.metaKey;
+    }
+    if (!this._wasKeypress) {
       return true;
     }
 
-    var keyCode = event.keyCode;
-    var keyChar = String.fromCharCode(keyCode).toLowerCase();
+    var sel = Selection.getInfo(this._model);
+    if (sel === null) {
+      return true;
+    }
 
     // Carriage return
     if (keyCode === 13 || (keyChar === 'm' && event.ctrlKey)) {
@@ -191,6 +199,12 @@ var Editor = (function() {
       var sel = this.insertText(sel);
       Selection.setCaret(this._model[sel.startIdx + 1].dom[0], 0);
 
+      if (sel.startIdx !== 0) {
+        this._model[sel.startIdx].syncModel();
+      }
+
+      this._wasKeypress = false;
+
       return false;
     } else if (keyCode === 8 || keyCode === 46) { // Backspace
       event.preventDefault();
@@ -198,13 +212,30 @@ var Editor = (function() {
       var caretInfo = this.removeText(sel, keyCode);
       Selection.setCaret(this._model[caretInfo.idx].dom[0], caretInfo.pos);
 
+      this._wasKeypress = false;
+
       return false;
     }
   };
 
+  Editor.prototype._onkeyup = function _editorOnkeyup(event) {
+    var sel = Selection.getInfo(this._model);
+
+    if (sel !== null && this._wasKeypress) {
+      this._model[sel.startIdx].syncModel();
+      if (sel.startIdx !== sel.endIdx) {
+        this._model[sel.endIdx].syncModel();
+      }
+      Selection.setCaret(this._model[sel.endIdx].dom[0], sel.endPos);
+    }
+
+    return true;
+  };
+
   Editor.prototype._eventsHandlers = function _editorEventsHandlers() {
     this._dom.on({
-      keydown: this._onkeydown.bind(this)
+      keydown: this._onkeydown.bind(this),
+      keyup: this._onkeyup.bind(this)
     });
   };
 

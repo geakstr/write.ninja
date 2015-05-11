@@ -7,7 +7,7 @@ $(document).ready(function() {
 
   var editor = new Editor();
 
-  editor.pushBlock('Это первая строка');
+  editor.pushBlock('- Это            первая строка');
   editor.pushBlock().pushBlock();
   editor.pushBlock('Это вторая строка');
 

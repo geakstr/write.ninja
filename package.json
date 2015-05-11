@@ -12,7 +12,6 @@
   "main": "app/www/index.html",
   "dependencies": {},
   "devDependencies": {
-    "browser-sync": "2.3.1",
     "gulp": "3.8.11",
     "gulp-autoprefixer": "2.1.0",
     "gulp-jscs": "1.4.0",

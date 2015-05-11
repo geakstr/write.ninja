@@ -5,7 +5,7 @@ var Block = (function() {
     this._idx = 0;
     this._text = text;
     this._type = this.detectType(text);
-    this._dom = $(this.format());
+    this._dom = this.format();
   }
 
   Object.defineProperty(Block.prototype, 'idx', {
@@ -26,13 +26,16 @@ var Block = (function() {
     set: function(text) {
       this._text = text;
       var newType = this.detectType(text);
+
       if (this.type !== newType) {
+        this.dom.removeClass('-' + this.type);
+
         this.type = newType;
-        if (this.type === 'empty') {
-          this._dom.html('<br/>');
-        } else {
-          this._dom.text(text);
-        }
+        this.dom.addClass('-' + this.type);
+      }
+
+      if (this.type === 'empty') {
+        this._dom.html('<br />');
       } else {
         this._dom.text(text);
       }
@@ -60,13 +63,17 @@ var Block = (function() {
     enumerable: true
   });
 
+  Block.prototype.syncModel = function blockSyncModel() {
+    this.text = this.dom.text();
+  };
+
   Block.prototype.detectType = function blockDetectType(text) {
-    text = text.trim();
+    var trimmedText = text.trim();
 
     var type = 'note';
-    if (text.length === 0) {
+    if (trimmedText.length === 0) {
       type = 'empty';
-    } else if (text[0] === '-') {
+    } else if (trimmedText[0] === '-' || trimmedText[0] === '—') {
       type = 'task';
     }
 
@@ -74,15 +81,19 @@ var Block = (function() {
   };
 
   Block.prototype.format = function blockFormat() {
-    var css = 'edtr-blck';
-    var attr = 'class="' + css + '" data-idx="' + this._idx + '"';
+    var el = $(document.createElement('p'));
 
-    var text = this._text;
+    el.addClass('edtr-blck');
+    el.addClass('-' + this.type);
+    el.prop('data-idx', this.idx);
+
+    var text = this.text;
     if (text.length === 0) {
       text = '<br/>';
     }
+    el.html(text);
 
-    return '<p ' + attr + '>' + text + '</p>';
+    return el;
   };
 
   return Block;

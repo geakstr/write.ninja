@@ -318,7 +318,7 @@ $(document).ready(function() {
 
   var editor = new Editor();
 
-  editor.pushBlock('Это первая строка');
+  editor.pushBlock('- Это            первая строка');
   editor.pushBlock().pushBlock();
   editor.pushBlock('Это вторая строка');
 
@@ -335,7 +335,7 @@ var Block = (function() {
     this._idx = 0;
     this._text = text;
     this._type = this.detectType(text);
-    this._dom = $(this.format());
+    this._dom = this.format();
   }
 
   Object.defineProperty(Block.prototype, 'idx', {
@@ -356,13 +356,16 @@ var Block = (function() {
     set: function(text) {
       this._text = text;
       var newType = this.detectType(text);
-      if (this.type === newType) {
+
+      if (this.type !== newType) {
+        this.dom.removeClass('-' + this.type);
+
         this.type = newType;
-        if (this.type === 'empty') {
-          this._dom.html('<br/>');
-        } else {
-          this._dom.text(text);
-        }
+        this.dom.addClass('-' + this.type);
+      }
+
+      if (this.type === 'empty') {
+        this._dom.html('<br />');
       } else {
         this._dom.text(text);
       }
@@ -390,13 +393,17 @@ var Block = (function() {
     enumerable: true
   });
 
+  Block.prototype.syncModel = function blockSyncModel() {
+    this.text = this.dom.text();
+  };
+
   Block.prototype.detectType = function blockDetectType(text) {
-    text = text.trim();
+    var trimmedText = text.trim();
 
     var type = 'note';
-    if (text.length === 0) {
+    if (trimmedText.length === 0) {
       type = 'empty';
-    } else if (text[0] === '-') {
+    } else if (trimmedText[0] === '-' || trimmedText[0] === '—') {
       type = 'task';
     }
 
@@ -404,15 +411,19 @@ var Block = (function() {
   };
 
   Block.prototype.format = function blockFormat() {
-    var css = 'edtr-blck';
-    var attr = 'class="' + css + '" data-idx="' + this._idx + '"';
+    var el = $(document.createElement('p'));
 
-    var text = this._text;
+    el.addClass('edtr-blck');
+    el.addClass('-' + this.type);
+    el.prop('data-idx', this.idx);
+
+    var text = this.text;
     if (text.length === 0) {
       text = '<br/>';
     }
+    el.html(text);
 
-    return '<p ' + attr + '>' + text + '</p>';
+    return el;
   };
 
   return Block;
@@ -429,6 +440,8 @@ var Editor = (function() {
     this._dom = $('#editor');
     this._dom.attr('spellcheck', false);
     this._model = [];
+
+    this._wasKeypress = false;
 
     this._eventsHandlers();
   }
@@ -501,7 +514,6 @@ var Editor = (function() {
     sel.rightText = sel.rightText.substring(sel.endPos);
 
     sel.startBlock.text = sel.leftText;
-    console.log(sel.startBlock.text);
     if (!isCarriageReturn) {
       sel.startBlock.text += newText + sel.rightText;
     }
@@ -598,14 +610,21 @@ var Editor = (function() {
   };
 
   Editor.prototype._onkeydown = function _editorOnkeydown(event) {
-    var sel = Selection.getInfo(this._model);
+    var keyCode = event.keyCode;
+    var keyChar = String.fromCharCode(keyCode).toLowerCase();
 
-    if (sel === null) {
+    this._wasKeypress = [37, 38, 39, 40].indexOf(event.keyCode) === -1;
+    if (this._wasKeypress) {
+      this._wasKeypress = !event.metaKey;
+    }
+    if (!this._wasKeypress) {
       return true;
     }
 
-    var keyCode = event.keyCode;
-    var keyChar = String.fromCharCode(keyCode).toLowerCase();
+    var sel = Selection.getInfo(this._model);
+    if (sel === null) {
+      return true;
+    }
 
     // Carriage return
     if (keyCode === 13 || (keyChar === 'm' && event.ctrlKey)) {
@@ -614,6 +633,12 @@ var Editor = (function() {
       var sel = this.insertText(sel);
       Selection.setCaret(this._model[sel.startIdx + 1].dom[0], 0);
 
+      if (sel.startIdx !== 0) {
+        this._model[sel.startIdx].syncModel();
+      }
+
+      this._wasKeypress = false;
+
       return false;
     } else if (keyCode === 8 || keyCode === 46) { // Backspace
       event.preventDefault();
@@ -621,13 +646,30 @@ var Editor = (function() {
       var caretInfo = this.removeText(sel, keyCode);
       Selection.setCaret(this._model[caretInfo.idx].dom[0], caretInfo.pos);
 
+      this._wasKeypress = false;
+
       return false;
     }
   };
 
+  Editor.prototype._onkeyup = function _editorOnkeyup(event) {
+    var sel = Selection.getInfo(this._model);
+
+    if (sel !== null && this._wasKeypress) {
+      this._model[sel.startIdx].syncModel();
+      if (sel.startIdx !== sel.endIdx) {
+        this._model[sel.endIdx].syncModel();
+      }
+      Selection.setCaret(this._model[sel.endIdx].dom[0], sel.endPos);
+    }
+
+    return true;
+  };
+
   Editor.prototype._eventsHandlers = function _editorEventsHandlers() {
     this._dom.on({
-      keydown: this._onkeydown.bind(this)
+      keydown: this._onkeydown.bind(this),
+      keyup: this._onkeyup.bind(this)
     });
   };
 

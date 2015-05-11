@@ -3,20 +3,11 @@ var gulp = require('gulp'),
   run = require('gulp-run'),
   autoprefixer = require('gulp-autoprefixer'),
   jscs = require('gulp-jscs'),
-  koutoSwiss = require("kouto-swiss"),
-  browserSync = require('browser-sync'),
-  reload = browserSync.reload;
+  koutoSwiss = require("kouto-swiss");
 
 gulp.task('dev', ['stylus-dev', 'js-dev', 'move-dev'], function() {
-  browserSync({
-    proxy: "write.ninja:8000",
-    notify: false,
-    open: false
-  });
-
   gulp.watch('app/src/frontend/stylus/*.styl', ['stylus-dev']);
   gulp.watch('app/src/frontend/js/*.js', ['js-dev']);
-  gulp.watch("app/www/*.html").on('change', reload);
 });
 
 gulp.task('stylus-dev', function() {
@@ -29,15 +20,12 @@ gulp.task('stylus-dev', function() {
       browsers: ['last 2 versions'],
       cascade: true
     }))
-    .pipe(gulp.dest('app/www/static/css'))
-    .pipe(reload({
-      stream: true
-    }));
+    .pipe(gulp.dest('app/www/static/css'));
 });
 
 gulp.task('js-dev', function() {
   run('lmd build app').exec(function() {
-    reload();
+
   });
 });
 
