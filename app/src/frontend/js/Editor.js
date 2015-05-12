@@ -194,7 +194,7 @@ var Editor = (function() {
 
     var sel = Selection.getInfo(this._model);
     if (sel === null) {
-      return true;
+      return false;
     }
 
     // Carriage return
@@ -241,26 +241,31 @@ var Editor = (function() {
   Editor.prototype._onpaste = function _editorOnpaste(event) {
     event.preventDefault();
 
+    var sel = Selection.getInfo(this._model);
+    if (sel === null) {
+      return false;
+    }
+
     var pasted = event.originalEvent.clipboardData.getData('text/plain');
     var blocks = pasted.split('\n');
-    var sel = Selection.getInfo(this._model);
-    var additionalOffset = sel.startPos + pasted.length;
+    var blocksLen = blocks.length;
+    var offset = sel.startPos + pasted.length;
 
-    if (blocks.length === 0) {
+    if (blocksLen === 0) {
       return false;
-    } else if (blocks.length === 1) {
+    } else if (blocksLen === 1) {
       this.insertText(sel, blocks[0]);
     } else {
       if (sel.isCaret && sel.startPos === 0 && sel.startIdx === 0) {
-        for (var i = 0; i < blocks.length - 1; i++) {
+        for (var i = 0; i < blocksLen - 1; i++) {
           this.insertBlock(sel.startIdx++, blocks[i]);
         }
 
-        this.insertText(sel, blocks[blocks.length - 1]);
+        this.insertText(sel, blocks[blocksLen - 1]);
       } else if (sel.isCaret && sel.endPos === sel.rightText.length && sel.endIdx === this._model.length - 1) {
         this.insertText(sel, blocks[0]);
 
-        for (var i = 1; i < blocks.length; i++) {
+        for (var i = 1; i < blocksLen; i++) {
           this.insertBlock(++sel.startIdx, blocks[i]);
         }
       } else {
@@ -273,17 +278,17 @@ var Editor = (function() {
           this.removeBlocksRange(sel.startIdx + 1, sel.endIdx);
         }
 
-        for (var i = 1; i < blocks.length - 1; i++) {
+        for (var i = 1; i < blocksLen - 1; i++) {
           this.insertBlock(++sel.startIdx, blocks[i]);
         }
 
-        this.insertBlock(++sel.startIdx, blocks[blocks.length - 1] + sel.rightText);
+        this.insertBlock(++sel.startIdx, blocks[blocksLen - 1] + sel.rightText);
       }
 
-      additionalOffset = blocks[blocks.length - 1].length;
+      offset = blocks[blocksLen - 1].length;
     }
 
-    Selection.setCaret(this._model[sel.startIdx].dom[0], additionalOffset);
+    Selection.setCaret(this._model[sel.startIdx].dom[0], offset);
 
     return false;
   };
@@ -293,7 +298,7 @@ var Editor = (function() {
 
     var sel = Selection.getInfo(this._model);
     if (sel === null) {
-      return true;
+      return false;
     }
 
     var text = '';
