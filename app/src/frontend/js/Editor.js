@@ -244,13 +244,46 @@ var Editor = (function() {
     var pasted = event.originalEvent.clipboardData.getData('text/plain');
     var blocks = pasted.split('\n');
     var sel = Selection.getInfo(this._model);
+    var additionalOffset = sel.startPos + pasted.length;
 
     if (blocks.length === 0) {
       return false;
     } else if (blocks.length === 1) {
       this.insertText(sel, blocks[0]);
-      Selection.setCaret(this._model[sel.startIdx].dom[0], sel.startPos + blocks[0].length);
+    } else {
+      if (sel.isCaret && sel.startPos === 0 && sel.startIdx === 0) {
+        for (var i = 0; i < blocks.length - 1; i++) {
+          this.insertBlock(sel.startIdx++, blocks[i]);
+        }
+
+        this.insertText(sel, blocks[blocks.length - 1]);
+      } else if (sel.isCaret && sel.endPos === sel.rightText.length && sel.endIdx === this._model.length - 1) {
+        this.insertText(sel, blocks[0]);
+
+        for (var i = 1; i < blocks.length; i++) {
+          this.insertBlock(++sel.startIdx, blocks[i]);
+        }
+      } else {
+        sel.leftText = sel.leftText.substring(0, sel.startPos);
+        sel.rightText = sel.rightText.substring(sel.endPos);
+
+        sel.startBlock.text = sel.leftText + blocks[0];
+
+        if (sel.isRange) {
+          this.removeBlocksRange(sel.startIdx + 1, sel.endIdx);
+        }
+
+        for (var i = 1; i < blocks.length - 1; i++) {
+          this.insertBlock(++sel.startIdx, blocks[i]);
+        }
+
+        this.insertBlock(++sel.startIdx, blocks[blocks.length - 1] + sel.rightText);
+      }
+
+      additionalOffset = blocks[blocks.length - 1].length;
     }
+
+    Selection.setCaret(this._model[sel.startIdx].dom[0], additionalOffset);
 
     return false;
   };

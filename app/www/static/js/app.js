@@ -342,10 +342,12 @@ var Block = (function() {
     get: function() {
       return this._idx;
     },
+
     set: function(idx) {
       this._idx = idx;
       this._dom.attr('data-idx', idx);
     },
+
     enumerable: true
   });
 
@@ -353,6 +355,7 @@ var Block = (function() {
     get: function() {
       return this._text;
     },
+
     set: function(text) {
       this._text = text;
       var newType = this.detectType(text);
@@ -370,6 +373,7 @@ var Block = (function() {
         this._dom.text(text);
       }
     },
+
     enumerable: true
   });
 
@@ -377,9 +381,11 @@ var Block = (function() {
     get: function() {
       return this._type;
     },
+
     set: function(type) {
       this._type = type;
     },
+
     enumerable: true
   });
 
@@ -387,9 +393,11 @@ var Block = (function() {
     get: function() {
       return this._dom;
     },
+
     set: function(dom) {
       this._dom = dom;
     },
+
     enumerable: true
   });
 
@@ -421,6 +429,7 @@ var Block = (function() {
     if (text.length === 0) {
       text = '<br/>';
     }
+
     el.html(text);
 
     return el;
@@ -569,6 +578,7 @@ var Editor = (function() {
 
         this.removeBlocksRange(sel.startIdx + 1, sel.endIdx);
       }
+
       sel.leftText = sel.leftText.substring(0, sel.startPos + backspaceOffset);
       sel.rightText = sel.rightText.substring(sel.endPos + deleteOffset);
     }
@@ -592,6 +602,7 @@ var Editor = (function() {
 
   Editor.prototype._splice = function _editorSplice(idx, n, block) {
     var removed = [];
+
     if (typeof block === 'undefined') {
       removed = this._model.splice(idx, n);
       removed.forEach(function(removedBlock) {
@@ -601,6 +612,7 @@ var Editor = (function() {
       this._model.splice(idx, n, block);
       this._dom.insertAt(idx, block.dom);
     }
+
     return removed;
   };
 
@@ -614,9 +626,11 @@ var Editor = (function() {
     var keyChar = String.fromCharCode(keyCode).toLowerCase();
 
     this._wasKeypress = [37, 38, 39, 40].indexOf(event.keyCode) === -1;
+
     if (this._wasKeypress) {
       this._wasKeypress = !event.metaKey;
     }
+
     if (!this._wasKeypress) {
       return true;
     }
@@ -660,6 +674,7 @@ var Editor = (function() {
       if (sel.startIdx !== sel.endIdx) {
         this._model[sel.endIdx].syncModel();
       }
+
       Selection.setCaret(this._model[sel.endIdx].dom[0], sel.endPos);
     }
 
@@ -670,15 +685,48 @@ var Editor = (function() {
     event.preventDefault();
 
     var pasted = event.originalEvent.clipboardData.getData('text/plain');
-    var blocks = pasted.split("\n");
+    var blocks = pasted.split('\n');
     var sel = Selection.getInfo(this._model);
+    var additionalOffset = sel.startPos + pasted.length;
 
     if (blocks.length === 0) {
       return false;
     } else if (blocks.length === 1) {
       this.insertText(sel, blocks[0]);
-      Selection.setCaret(this._model[sel.startIdx].dom[0], sel.startPos + blocks[0].length);
+    } else {
+      if (sel.isCaret && sel.startPos === 0 && sel.startIdx === 0) {
+        for (var i = 0; i < blocks.length - 1; i++) {
+          this.insertBlock(sel.startIdx++, blocks[i]);
+        }
+
+        this.insertText(sel, blocks[blocks.length - 1]);
+      } else if (sel.isCaret && sel.endPos === sel.rightText.length && sel.endIdx === this._model.length - 1) {
+        this.insertText(sel, blocks[0]);
+
+        for (var i = 1; i < blocks.length; i++) {
+          this.insertBlock(++sel.startIdx, blocks[i]);
+        }
+      } else {
+        sel.leftText = sel.leftText.substring(0, sel.startPos);
+        sel.rightText = sel.rightText.substring(sel.endPos);
+
+        sel.startBlock.text = sel.leftText + blocks[0];
+
+        if (sel.isRange) {
+          this.removeBlocksRange(sel.startIdx + 1, sel.endIdx);
+        }
+
+        for (var i = 1; i < blocks.length - 1; i++) {
+          this.insertBlock(++sel.startIdx, blocks[i]);
+        }
+
+        this.insertBlock(++sel.startIdx, blocks[blocks.length - 1] + sel.rightText);
+      }
+
+      additionalOffset = blocks[blocks.length - 1].length;
     }
+
+    Selection.setCaret(this._model[sel.startIdx].dom[0], additionalOffset);
 
     return false;
   };
@@ -691,14 +739,16 @@ var Editor = (function() {
       return true;
     }
 
-    var text = "";
+    var text = '';
     if (sel.startIdx === sel.endIdx) {
       text = this._model[sel.startIdx].text.substring(sel.startPos, sel.endPos);
     } else {
-      text = this._model[sel.startIdx].text.substring(sel.startPos) + "\n";
+      text = this._model[sel.startIdx].text.substring(sel.startPos) + '\n';
+
       for (var i = sel.startIdx + 1; i <= sel.endIdx - 1; i++) {
-        text += this._model[i].text + "\n";
+        text += this._model[i].text + '\n';
       }
+
       text += this._model[sel.endIdx].text.substring(0, sel.endPos);
     }
 
@@ -740,6 +790,7 @@ var Selection = (function() {
     if ($anchorNode.hasClass('edtr-blck') === false) {
       $anchorNode = $anchorNode.parents('.edtr-blck');
     }
+
     if ($focusNode.hasClass('edtr-blck') === false) {
       $focusNode = $focusNode.parents('.edtr-blck');
     }
@@ -866,6 +917,7 @@ var Utils = (function() {
       this.append(elements);
       return this;
     }
+
     var before = children.eq(index);
     $(elements).insertBefore(before);
     return this;
