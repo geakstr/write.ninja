@@ -9,6 +9,7 @@ var Utils = (function() {
       this.append(elements);
       return this;
     }
+
     var before = children.eq(index);
     $(elements).insertBefore(before);
     return this;

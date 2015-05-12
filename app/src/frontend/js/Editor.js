@@ -135,6 +135,7 @@ var Editor = (function() {
 
         this.removeBlocksRange(sel.startIdx + 1, sel.endIdx);
       }
+
       sel.leftText = sel.leftText.substring(0, sel.startPos + backspaceOffset);
       sel.rightText = sel.rightText.substring(sel.endPos + deleteOffset);
     }
@@ -158,6 +159,7 @@ var Editor = (function() {
 
   Editor.prototype._splice = function _editorSplice(idx, n, block) {
     var removed = [];
+
     if (typeof block === 'undefined') {
       removed = this._model.splice(idx, n);
       removed.forEach(function(removedBlock) {
@@ -167,6 +169,7 @@ var Editor = (function() {
       this._model.splice(idx, n, block);
       this._dom.insertAt(idx, block.dom);
     }
+
     return removed;
   };
 
@@ -180,9 +183,11 @@ var Editor = (function() {
     var keyChar = String.fromCharCode(keyCode).toLowerCase();
 
     this._wasKeypress = [37, 38, 39, 40].indexOf(event.keyCode) === -1;
+
     if (this._wasKeypress) {
       this._wasKeypress = !event.metaKey;
     }
+
     if (!this._wasKeypress) {
       return true;
     }
@@ -226,6 +231,7 @@ var Editor = (function() {
       if (sel.startIdx !== sel.endIdx) {
         this._model[sel.endIdx].syncModel();
       }
+
       Selection.setCaret(this._model[sel.endIdx].dom[0], sel.endPos);
     }
 
@@ -236,7 +242,7 @@ var Editor = (function() {
     event.preventDefault();
 
     var pasted = event.originalEvent.clipboardData.getData('text/plain');
-    var blocks = pasted.split("\n");
+    var blocks = pasted.split('\n');
     var sel = Selection.getInfo(this._model);
 
     if (blocks.length === 0) {
@@ -257,14 +263,16 @@ var Editor = (function() {
       return true;
     }
 
-    var text = "";
+    var text = '';
     if (sel.startIdx === sel.endIdx) {
       text = this._model[sel.startIdx].text.substring(sel.startPos, sel.endPos);
     } else {
-      text = this._model[sel.startIdx].text.substring(sel.startPos) + "\n";
+      text = this._model[sel.startIdx].text.substring(sel.startPos) + '\n';
+
       for (var i = sel.startIdx + 1; i <= sel.endIdx - 1; i++) {
-        text += this._model[i].text + "\n";
+        text += this._model[i].text + '\n';
       }
+
       text += this._model[sel.endIdx].text.substring(0, sel.endPos);
     }
 

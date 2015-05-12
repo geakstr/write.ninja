@@ -12,10 +12,12 @@ var Block = (function() {
     get: function() {
       return this._idx;
     },
+
     set: function(idx) {
       this._idx = idx;
       this._dom.attr('data-idx', idx);
     },
+
     enumerable: true
   });
 
@@ -23,6 +25,7 @@ var Block = (function() {
     get: function() {
       return this._text;
     },
+
     set: function(text) {
       this._text = text;
       var newType = this.detectType(text);
@@ -40,6 +43,7 @@ var Block = (function() {
         this._dom.text(text);
       }
     },
+
     enumerable: true
   });
 
@@ -47,9 +51,11 @@ var Block = (function() {
     get: function() {
       return this._type;
     },
+
     set: function(type) {
       this._type = type;
     },
+
     enumerable: true
   });
 
@@ -57,9 +63,11 @@ var Block = (function() {
     get: function() {
       return this._dom;
     },
+
     set: function(dom) {
       this._dom = dom;
     },
+
     enumerable: true
   });
 
@@ -91,6 +99,7 @@ var Block = (function() {
     if (text.length === 0) {
       text = '<br/>';
     }
+
     el.html(text);
 
     return el;

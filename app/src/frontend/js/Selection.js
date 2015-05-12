@@ -13,6 +13,7 @@ var Selection = (function() {
     if ($anchorNode.hasClass('edtr-blck') === false) {
       $anchorNode = $anchorNode.parents('.edtr-blck');
     }
+
     if ($focusNode.hasClass('edtr-blck') === false) {
       $focusNode = $focusNode.parents('.edtr-blck');
     }
